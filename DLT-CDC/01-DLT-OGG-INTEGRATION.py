@@ -1,15 +1,15 @@
 # Databricks notebook source
 import dlt
 from pyspark.sql.functions import *
-##Create the bronze information table containing the raw JSON data taken from the storage path printed in Cmd5 in 00_Retail_Data_CDC_Generator notebook
+##Create the bronze information table containing the parquet data taken from the storage
 @dlt.create_table(name="ocigg_cdc",
-                  comment = "New  data incrementally ingested from GoldenGate")
+                  comment = "New data incrementally ingested from GoldenGate")
 def ocigg_cdc():
   return (
     spark.readStream.format("cloudFiles")
-      .option("cloudFiles.format", "json")
+      .option("cloudFiles.format", "parquet")
       .option("cloudFiles.inferColumnTypes", "true")
-      .load("/mnt/ogg/OGG.OGGTEST.T4"))
+      .load("/mnt/ogg/OGG.OGGTEST.T5"))
 
 # COMMAND ----------
 
