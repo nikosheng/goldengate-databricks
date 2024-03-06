@@ -25,7 +25,7 @@ def customers_cdc_clean():
 
 # COMMAND ----------
 
-dlt.create_target_table(name="ocigg_final", comment="Clean, materialized OCI GoldenGate CDC data")
+dlt.create_streaming_table(name="ocigg_final", comment="Clean, materialized OCI GoldenGate CDC data")
 
 # COMMAND ----------
 
