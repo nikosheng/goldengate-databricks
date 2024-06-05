@@ -28,7 +28,7 @@ def ocigg_cdc():
                   comment="Cleansed cdc data, tracking data quality with a view.")
 @dlt.expect_or_drop("no_rescued_data", "_rescued_data IS NULL")
 @dlt.expect_or_drop("valid_id", "ID IS NOT NULL")
-@dlt.expect_or_drop("valid_operation", "optype IN ('I', 'D', 'U')")
+@dlt.expect_or_drop("valid_operation", "optype IN ('I', 'D', 'U', 'T')")
 def customers_cdc_clean():
   return dlt.read_stream("ocigg_cdc") \
             .select("ADDRESS", "NAME", "ID", "optype", "timestamp", "_rescued_data")
