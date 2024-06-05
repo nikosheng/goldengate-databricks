@@ -13,9 +13,9 @@ from pyspark.sql.functions import *
 def ocigg_cdc():
   return (
     spark.readStream.format("cloudFiles")
-      .option("cloudFiles.format", "json")
+      .option("cloudFiles.format", "parquet")
       .option("cloudFiles.inferColumnTypes", "true")
-      .load("/mnt/ogg/ogg/OGG.OGGTEST.T/cdc/delta"))
+      .load("/mnt/ogg/PDB01.GGSAMPLE.TBL_WITH_CLOB/"))
 
 # COMMAND ----------
 
@@ -31,7 +31,7 @@ def ocigg_cdc():
 @dlt.expect_or_drop("valid_operation", "optype IN ('I', 'D', 'U', 'T')")
 def customers_cdc_clean():
   return dlt.read_stream("ocigg_cdc") \
-            .select("ADDRESS", "NAME", "ID", "optype", "timestamp", "_rescued_data")
+            .select("ID", "CLOB_DATA", "optype", "timestamp", "currenttimestamp", "objectname", "_rescued_data")
 
 # COMMAND ----------
 
@@ -40,8 +40,28 @@ def customers_cdc_clean():
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC In addition, please setup configuration `pipelines.tableManagedByMultiplePipelinesCheck.enabled` to `false` in DLT configuration, otherwise the existing streaming table is not able to be used in other DLT pipelines.
+# MAGIC
+# MAGIC Here is the error message if you try to use the exisitng streaming table in other pipelines
+# MAGIC ```
+# MAGIC org.apache.spark.sql.AnalysisException: Table 'ocigg_existing_streaming_table' is already managed by pipeline da2fa1fd-b90d-4ee6-b6ca-d7d729bbda3e.
+# MAGIC A table should only be managed by one pipeline. Concurrent pipeline
+# MAGIC operations such as maintenance and full refresh will conflict with each other.
+# MAGIC
+# MAGIC If you want table 'ocigg_existing_streaming_table' to be managed by this pipeline
+# MAGIC 1) Remove the table from pipeline 'da2fa1fd-b90d-4ee6-b6ca-d7d729bbda3e'
+# MAGIC 2) Start an update with a full refresh for this pipeline
+# MAGIC
+# MAGIC If you want to continue managing the table from multiple pipelines, set the
+# MAGIC configuration pipelines.tableManagedByMultiplePipelinesCheck.enabled to false
+# MAGIC in the pipeline settings to disable this check. However, doing so could result
+# MAGIC in unexpected behavior.
+# MAGIC ```
 
-dlt.create_streaming_table(name="ocigg_existing_streaming_table", comment="Clean, materialized OCI GoldenGate CDC target streaming table")
+# COMMAND ----------
+
+dlt.create_streaming_table(name="ocigg_existing_streaming_table")
 
 # COMMAND ----------
 
@@ -59,3 +79,7 @@ dlt.apply_changes(
   apply_as_deletes = expr("optype = 'D'"), #DELETE condition
   apply_as_truncates = expr("optype = 'T'"), #TRUNCATE condition
   except_column_list = ["optype", "_rescued_data"]) #in addition we drop metadata columns
+
+# COMMAND ----------
+
+

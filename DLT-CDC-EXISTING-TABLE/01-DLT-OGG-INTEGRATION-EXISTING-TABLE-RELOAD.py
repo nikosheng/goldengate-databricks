@@ -10,7 +10,7 @@ from pyspark.sql.functions import *
 # Reload the existing table
 @dlt.table(name = "ocigg_existing_table")
 def existing_table_reload():
-  return spark.table("oci.t4_delta")
+  return spark.table("default.tbl_with_clob")
 
 # COMMAND ----------
 
@@ -20,7 +20,7 @@ def existing_table_reload():
 # COMMAND ----------
 
 # Create the target streaming table
-dlt.create_streaming_table(name="ocigg_existing_streaming_table", comment="Create the target streaming table")
+dlt.create_streaming_table(name="ocigg_existing_streaming_table", comment="Create the target streaming table to reload the existing table")
 
 # COMMAND ----------
 
@@ -36,3 +36,7 @@ dlt.apply_changes(
   keys = ["ID"],
   sequence_by = col("timestamp"),
   ignore_null_updates = False)
+
+# COMMAND ----------
+
+
